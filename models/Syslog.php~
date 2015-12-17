@@ -37,7 +37,7 @@ class Syslog extends \yii\db\ActiveRecord
     {
         return [
             [['log_source', 'user_id'], 'required'],
-            [['errors_json'], 'string', 'min' => 0],
+            [['errors_json', 'message'], 'string', 'min' => 0],
             [['log_source', 'created_at', 'updated_at', 'user_id', 'scanned_item'], 'integer']
         ];
     }
@@ -180,4 +180,5 @@ class Syslog extends \yii\db\ActiveRecord
         }
     }
 }
+
 

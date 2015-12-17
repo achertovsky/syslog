@@ -157,10 +157,14 @@ class Syslog extends \yii\db\ActiveRecord
             return false;
         }
         if (is_string($errors)) {
-            $errors[] = $errors;
+            $temp = $errors;
+            unset($errors);
+            $errors[] = $temp;
         }
         if (is_string($message)) {
-            $message[] = $message;
+            $temp = $message;
+            unset($message);
+            $message[] = $temp;
         }
         $errors = Json::encode($errors);
         $message = Json::encode($message);
@@ -180,5 +184,6 @@ class Syslog extends \yii\db\ActiveRecord
         }
     }
 }
+
 
 
