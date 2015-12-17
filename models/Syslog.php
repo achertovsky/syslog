@@ -150,7 +150,7 @@ class Syslog extends \yii\db\ActiveRecord
      * @param int $type
      * @return true
      */
-    public static function log($userId = null, $message = null, $errors = null, $type = self::TYPE_UNDEFINED)
+    public static function log($errors = null, $message = null, $userId = null, $type = self::TYPE_UNDEFINED)
     {
         if (empty($user = User::findOne($userId))) {
             Yii::error("System have no user with id #$userId", 'syslog');
