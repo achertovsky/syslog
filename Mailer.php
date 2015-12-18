@@ -7,7 +7,7 @@ use Yii;
 class Mailer extends \yii\base\Component
 {
     /** @var string */
-    public $viewPath = '@views/syslog/mail';
+    public $viewPath = '@achertovsky/syslog/views/mail';
 
     /** @var string|array Default: `Yii::$app->params['adminEmail']` OR `no-reply@example.com` */
     public $sender;
@@ -83,7 +83,7 @@ class Mailer extends \yii\base\Component
             $this->sender = isset(Yii::$app->params['adminEmail']) ? Yii::$app->params['adminEmail'] : 'no-reply@example.com';
         }
 
-        return $mailer->compose(['html' => $view, 'text' => 'text/' . $view], $params)
+        return $mailer->compose(['html' => $view], $params)
             ->setTo($to)
             ->setFrom($this->sender)
             ->setSubject($subject)
