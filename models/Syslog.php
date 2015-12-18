@@ -8,6 +8,7 @@ use yii\helpers\ArrayHelper;
 use yii\behaviors\TimestampBehavior;
 use modules\user\models\User;
 use yii\base\Exception;
+use yii\db\Expression;
 
 /**
  * This is the model class for table "syslog".
@@ -38,7 +39,8 @@ class Syslog extends \yii\db\ActiveRecord
         return [
             [['log_source'], 'required'],
             [['issues'], 'string', 'min' => 0],
-            [['log_source', 'created_at', 'updated_at', 'user_id', 'scanned_item'], 'integer', 'min' => 0]
+            [['log_source', 'created_at', 'updated_at', 'user_id', 'scanned_item'], 'integer', 'min' => 0],
+            ['sended', 'boolean'],
         ];
     }
 
@@ -82,6 +84,11 @@ class Syslog extends \yii\db\ActiveRecord
         }
     }
     
+    /**
+     * @var int
+     */
+    const MAIL_SENDED = 1;
+    const MAIL_NOT_SENDED = 0;
     /**
      * defines scanned_item
      * @var int
@@ -132,7 +139,14 @@ class Syslog extends \yii\db\ActiveRecord
         $logs = self::find()->where([
             'and',
             ['<', 'created_at', strtotime('today midnight')],
-        ])->all();
+            ['=', 'sended', self::MAIL_NOT_SENDED],
+        ])->indexBy('id')->all();
+        self::updateAll([
+            'sended' => self::MAIL_SENDED,
+        ], [
+            'and',
+            ['in', 'id', array_keys($logs)],
+        ]);
         $summary = [];
         foreach ($logs as $key => $log) {
             $attributes = $log->getAttributes();
