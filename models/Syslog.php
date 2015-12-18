@@ -14,7 +14,7 @@ use yii\base\Exception;
  *
  * @property integer $id
  * @property integer $user_id
- * @property string $errors_json
+ * @property string $issues
  * @property integer $log_source
  * @property integer $scanned_item
  * @property integer $created_at
@@ -37,7 +37,7 @@ class Syslog extends \yii\db\ActiveRecord
     {
         return [
             [['log_source', 'user_id'], 'required'],
-            [['errors_json'], 'string', 'min' => 0],
+            [['issues'], 'string', 'min' => 0],
             [['log_source', 'created_at', 'updated_at', 'user_id', 'scanned_item'], 'integer']
         ];
     }
@@ -49,7 +49,7 @@ class Syslog extends \yii\db\ActiveRecord
     {
         return [
             'id' => 'ID',
-            'errors_json' => 'Errors',
+            'issues' => 'Issues',
             'log_source' => 'Log Source',
             'created_at' => 'Created At',
             'updated_at' => 'Updated At',
@@ -167,7 +167,7 @@ class Syslog extends \yii\db\ActiveRecord
         $log = new self();
         $log->setAttributes([
             'log_source' => $type,
-            'errors_json' => $errors,
+            'issues' => $errors,
             'user_id' => $user->id,
             'message' => $message,
         ]);
