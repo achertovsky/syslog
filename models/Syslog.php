@@ -36,9 +36,9 @@ class Syslog extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['log_source', 'user_id'], 'required'],
+            [['log_source'], 'required'],
             [['issues'], 'string', 'min' => 0],
-            [['log_source', 'created_at', 'updated_at', 'user_id', 'scanned_item'], 'integer']
+            [['log_source', 'created_at', 'updated_at', 'user_id', 'scanned_item'], 'integer', 'min' => 0]
         ];
     }
 
@@ -144,13 +144,33 @@ class Syslog extends \yii\db\ActiveRecord
     }
     
     /**
-     * encodes errors to json and saves to DB
-     * @param int $userId
-     * @param string, array $errors
-     * @param int $type
-     * @return true
+     * creates one level array from multidimensional
+     * @param array $array
+     * @return array
      */
-    public static function log($errors = null, $message = null, $userId = null, $type = self::TYPE_UNDEFINED)
+    protected static function formatToOneLevelArray($array)
+    {
+        foreach ($array as $elem) {
+            if (is_array($elem)) {
+                $subArray = self::formatToOneLevelArray($elem);
+                foreach ($subArray as $subElem) {
+                    $resultArray[] = $subElem;
+                }
+                continue;
+            }
+            $resultArray[] = $elem;
+        }
+        return $resultArray;
+    }
+    
+    /**
+        * encodes errors to json and saves to DB
+        * @param int $userId
+        * @param string, array $errors
+        * @param int $type
+        * @return true
+        */
+    public static function log($errors = null, $message = null, $userId = 0, $type = self::TYPE_UNDEFINED)
     {
         if (is_string($errors)) {
             $temp = $errors;
@@ -162,8 +182,14 @@ class Syslog extends \yii\db\ActiveRecord
             unset($message);
             $message[] = $temp;
         }
-        $errors = Json::encode($errors);
-        $message = Json::encode($message);
+        if (is_array($message)) {
+            $message = self::formatToOneLevelArray($message);
+            $message = Json::encode($message);
+        }
+        if (is_array($errors)) {
+            $errors = self::formatToOneLevelArray($errors);
+            $errors = Json::encode($errors);
+        }
         $log = new self();
         $log->setAttributes([
             'log_source' => $type,
