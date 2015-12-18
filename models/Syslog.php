@@ -150,17 +150,17 @@ class Syslog extends \yii\db\ActiveRecord
      * @param int $type
      * @return true
      */
-    public static function log($userId, $message = '', $errors = '', $type = self::TYPE_UNDEFINED)
+    public static function log($errors = null, $message = null, $userId = null, $type = self::TYPE_UNDEFINED)
     {
-        if (empty($user = User::findOne($userId))) {
-            Yii::error("System have no user with id #$userId", 'syslog');
-            return false;
-        }
         if (is_string($errors)) {
-            $errors[] = $errors;
+            $temp = $errors;
+            unset($errors);
+            $errors[] = $temp;
         }
         if (is_string($message)) {
-            $message[] = $message;
+            $temp = $message;
+            unset($message);
+            $message[] = $temp;
         }
         $errors = Json::encode($errors);
         $message = Json::encode($message);
@@ -168,7 +168,7 @@ class Syslog extends \yii\db\ActiveRecord
         $log->setAttributes([
             'log_source' => $type,
             'issues' => $errors,
-            'user_id' => $user->id,
+            'user_id' => $userId,
             'message' => $message,
         ]);
         if ($log->save()) {
@@ -180,4 +180,3 @@ class Syslog extends \yii\db\ActiveRecord
         }
     }
 }
-
