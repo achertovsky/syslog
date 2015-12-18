@@ -1,6 +1,16 @@
 {
     "name": "achertovsky/syslog",
     "description": "Doing logs and sends summary if required",
+    "type": "yii2-extension",
+    "keywords": ["yii2"," extension"],
+    "version": "@dev",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Alexander Zaets",
+            "email": "kygechukzp@gmail.com"
+        }
+    ],
     "require": {
         "php": ">=5.4.0",
         "yiisoft/yii2": ">=2.0.4"

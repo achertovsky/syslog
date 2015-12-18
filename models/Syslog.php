@@ -107,7 +107,11 @@ class Syslog extends \yii\db\ActiveRecord
         }
     }
     
-
+    /**
+     * sends emails for defined emails, admin, developer
+     * @param array $emails
+     * @throws Exception
+     */
     public static function sendSummary($emails = [])
     {
         $log = new self();
@@ -125,22 +129,22 @@ class Syslog extends \yii\db\ActiveRecord
             }
         }
         
-        $logs = Syslog::find()->where([
+        $logs = self::find()->where([
             'and',
             ['<', 'created_at', strtotime('today midnight')],
         ])->all();
         $summary = [];
-        foreach ($logs as $log) {
+        foreach ($logs as $key => $log) {
             $attributes = $log->getAttributes();
-            //teststring
-            $type = self::getTypeNameById($attributes['log_source']);
-            if (!empty($attributes['errors'])) {
-                $summary[$attributes['user_id']][$type]['errors'] = $attributes['errors'];
-            }
-            $summary[$attributes['user_id']][$type]['items_scanned'] = $attributes['errors'];
+            //decode JSON fieds for layout
+            $attributes['issues'] = Json::decode($attributes['issues']);
+            $attributes['message'] = Json::decode($attributes['message']);
+            $attributes['log_source'] = self::getTypeNameById($attributes['log_source']);
+            $summary[] = $attributes;
         }
-        
-        return true;
+        foreach ($emails as $email) {
+            $log->mailer->sendSummaryMessage($email, $summary);
+        }
     }
     
     /**
