@@ -188,7 +188,7 @@ class Syslog extends \yii\db\ActiveRecord
         * @param int $type
         * @return true
         */
-    public static function log($errors = null, $message = null, $userId = 0, $type = self::TYPE_UNDEFINED)
+    public static function log($errors = '', $message = '', $userId = 0, $type = self::TYPE_UNDEFINED)
     {
         if (is_string($errors)) {
             $temp = $errors;
