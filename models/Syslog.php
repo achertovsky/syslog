@@ -219,7 +219,7 @@ class Syslog extends \yii\db\ActiveRecord
             Yii::trace("Logged info:\n".var_export($log->getAttributes(), true), 'syslog');
             return true;
         } else {
-            Yii::error("Logs save errors occured. Listing:\n".var_export($log->errors, true), 'syslog');
+            Yii::error("Logs save errors occured. Listing:\n".var_export($log->errors, true).var_export($log->getAttributes(), true), 'syslog');
             return false;
         }
     }
