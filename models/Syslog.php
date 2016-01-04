@@ -168,6 +168,7 @@ class Syslog extends \yii\db\ActiveRecord
      */
     protected static function formatToOneLevelArray($array)
     {
+        $resultArray = [];
         foreach ($array as $elem) {
             if (is_array($elem)) {
                 $subArray = self::formatToOneLevelArray($elem);
@@ -224,3 +225,4 @@ class Syslog extends \yii\db\ActiveRecord
         }
     }
 }
+
