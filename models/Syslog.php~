@@ -8,13 +8,14 @@ use yii\helpers\ArrayHelper;
 use yii\behaviors\TimestampBehavior;
 use modules\user\models\User;
 use yii\base\Exception;
+use yii\db\Expression;
 
 /**
  * This is the model class for table "syslog".
  *
  * @property integer $id
  * @property integer $user_id
- * @property string $errors_json
+ * @property string $issues
  * @property integer $log_source
  * @property integer $scanned_item
  * @property integer $created_at
@@ -36,9 +37,10 @@ class Syslog extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['log_source', 'user_id'], 'required'],
-            [['errors_json', 'message'], 'string', 'min' => 0],
-            [['log_source', 'created_at', 'updated_at', 'user_id', 'scanned_item'], 'integer']
+            [['log_source'], 'required'],
+            [['issues', 'message'], 'string', 'min' => 0],
+            [['log_source', 'created_at', 'updated_at', 'user_id', 'scanned_item'], 'integer', 'min' => 0],
+            ['sended', 'boolean'],
         ];
     }
 
@@ -49,7 +51,7 @@ class Syslog extends \yii\db\ActiveRecord
     {
         return [
             'id' => 'ID',
-            'errors_json' => 'Errors',
+            'issues' => 'Issues',
             'log_source' => 'Log Source',
             'created_at' => 'Created At',
             'updated_at' => 'Updated At',
@@ -83,6 +85,11 @@ class Syslog extends \yii\db\ActiveRecord
     }
     
     /**
+     * @var int
+     */
+    const MAIL_SENDED = 1;
+    const MAIL_NOT_SENDED = 0;
+    /**
      * defines scanned_item
      * @var int
      */
@@ -107,7 +114,11 @@ class Syslog extends \yii\db\ActiveRecord
         }
     }
     
-
+    /**
+     * sends emails for defined emails, admin, developer
+     * @param array $emails
+     * @throws Exception
+     */
     public static function sendSummary($emails = [])
     {
         $log = new self();
@@ -125,60 +136,91 @@ class Syslog extends \yii\db\ActiveRecord
             }
         }
         
-        $logs = Syslog::find()->where([
+        $logs = self::find()->where([
             'and',
             ['<', 'created_at', strtotime('today midnight')],
-        ])->all();
+            ['=', 'sended', self::MAIL_NOT_SENDED],
+        ])->indexBy('id')->all();
+        self::updateAll([
+            'sended' => self::MAIL_SENDED,
+        ], [
+            'and',
+            ['in', 'id', array_keys($logs)],
+        ]);
         $summary = [];
-        foreach ($logs as $log) {
+        foreach ($logs as $key => $log) {
             $attributes = $log->getAttributes();
-            //teststring
-            $type = self::getTypeNameById($attributes['log_source']);
-            if (!empty($attributes['errors'])) {
-                $summary[$attributes['user_id']][$type]['errors'] = $attributes['errors'];
-            }
-            $summary[$attributes['user_id']][$type]['items_scanned'] = $attributes['errors'];
+            //decode JSON fieds for layout
+            $attributes['issues'] = Json::decode($attributes['issues']);
+            $attributes['message'] = Json::decode($attributes['message']);
+            $attributes['log_source'] = self::getTypeNameById($attributes['log_source']);
+            $summary[] = $attributes;
         }
-        
-        return true;
+        foreach ($emails as $email) {
+            $log->mailer->sendSummaryMessage($email, $summary);
+        }
     }
     
     /**
-     * encodes errors to json and saves to DB
-     * @param int $userId
-     * @param string, array $errors
-     * @param int $type
-     * @return true
+     * creates one level array from multidimensional
+     * @param array $array
+     * @return array
      */
-    public static function log($userId, $message = '', $errors = '', $type = self::TYPE_UNDEFINED)
+    protected static function formatToOneLevelArray($array)
     {
-        if (empty($user = User::findOne($userId))) {
-            Yii::error("System have no user with id #$userId", 'syslog');
-            return false;
+        foreach ($array as $elem) {
+            if (is_array($elem)) {
+                $subArray = self::formatToOneLevelArray($elem);
+                foreach ($subArray as $subElem) {
+                    $resultArray[] = $subElem;
+                }
+                continue;
+            }
+            $resultArray[] = $elem;
         }
+        return $resultArray;
+    }
+    
+    /**
+        * encodes errors to json and saves to DB
+        * @param int $userId
+        * @param string, array $errors
+        * @param int $type
+        * @return true
+        */
+    public static function log($errors = '', $message = '', $userId = 0, $type = self::TYPE_UNDEFINED)
+    {
         if (is_string($errors)) {
-            $errors[] = $errors;
+            $temp = $errors;
+            unset($errors);
+            $errors[] = $temp;
         }
         if (is_string($message)) {
-            $message[] = $message;
+            $temp = $message;
+            unset($message);
+            $message[] = $temp;
         }
-        $errors = Json::encode($errors);
-        $message = Json::encode($message);
+        if (is_array($message)) {
+            $message = self::formatToOneLevelArray($message);
+            $message = Json::encode($message);
+        }
+        if (is_array($errors)) {
+            $errors = self::formatToOneLevelArray($errors);
+            $errors = Json::encode($errors);
+        }
         $log = new self();
         $log->setAttributes([
             'log_source' => $type,
-            'errors_json' => $errors,
-            'user_id' => $user->id,
+            'issues' => $errors,
+            'user_id' => $userId,
             'message' => $message,
         ]);
         if ($log->save()) {
             Yii::trace("Logged info:\n".var_export($log->getAttributes(), true), 'syslog');
             return true;
         } else {
-            Yii::error("Logs save errors occured. Listing:\n".var_export($log->errors, true), 'syslog');
+            Yii::error("Logs save errors occured. Listing:\n".var_export($log->errors, true).var_export($log->getAttributes(), true), 'syslog');
             return false;
         }
     }
 }
-
-
