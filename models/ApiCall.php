@@ -1,6 +1,6 @@
 <?php
 
-namespace modules\syslog\models;
+namespace achertovsky\syslog\models;
 
 use Yii;
 use yii\behaviors\TimestampBehavior;

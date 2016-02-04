@@ -147,6 +147,34 @@ class Syslog extends \yii\db\ActiveRecord
             'and',
             ['in', 'id', array_keys($logs)],
         ]);
+        //get calls
+        $callsIds = ApiCall::find()->where([
+            'and',
+            ['<', 'created_at', strtotime('today midnight')],
+            ['=', 'sended', Syslog::MAIL_NOT_SENDED],
+        ])->indexBy('id')->all();
+        $calls = ApiCall::find()->select([
+            'id',
+            'COUNT(call_name) as count',
+            'call_name',
+            'call_to',
+        ])->where([
+            'and',
+            ['in', 'id', array_keys($callsIds)]
+        ])->groupBy('call_name')->indexBy('id')->all();
+        $callsStatistic = [];
+        foreach ($calls as $key => $call) {
+            $callsStatistic[$key]['call_quantity'] = $call->count;
+            $callsStatistic[$key]['call_name'] = $call->call_name;
+            $callsStatistic[$key]['call_to'] = $call->call_to;
+        }
+        //update calls
+        ApiCall::updateAll([
+            'sended' => self::MAIL_SENDED,
+        ], [
+            'and',
+            ['in', 'id', array_keys($callsIds)],
+        ]);
         $summary = [];
         foreach ($logs as $key => $log) {
             $attributes = $log->getAttributes();
