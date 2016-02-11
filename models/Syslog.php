@@ -211,13 +211,13 @@ class Syslog extends \yii\db\ActiveRecord
     }
     
     /**
-        * encodes errors to json and saves to DB
-        * @param int $userId
-        * @param string, array $errors
-        * @param int $type
-        * @return true
-        */
-    public static function log($errors = '', $message = '', $userId = 0, $type = self::TYPE_UNDEFINED)
+    * encodes errors to json and saves to DB
+    * @param int $userId
+    * @param string, array $errors
+    * @param int $type
+    * @return true
+    */
+    public static function log($errors = '', $message = '', $userId = 0, $type = self::TYPE_UNDEFINED, $extraFields = [])
     {
         if (is_string($errors)) {
             $temp = $errors;
@@ -238,6 +238,7 @@ class Syslog extends \yii\db\ActiveRecord
             $errors = Json::encode($errors);
         }
         $log = new self();
+        $log->load($extraFields);
         $log->setAttributes([
             'log_source' => $type,
             'issues' => $errors,
@@ -253,4 +254,5 @@ class Syslog extends \yii\db\ActiveRecord
         }
     }
 }
+
 
