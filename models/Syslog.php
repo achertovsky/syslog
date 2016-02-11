@@ -211,14 +211,15 @@ class Syslog extends \yii\db\ActiveRecord
     }
     
     /**
-        * encodes errors to json and saves to DB
-        * @param int $userId
-        * @param string, array $errors
-        * @param int $type
-        * @return true
-        */
-    public static function log($errors = '', $message = '', $userId = 0, $type = self::TYPE_UNDEFINED)
+    * encodes errors to json and saves to DB
+    * @param int $userId
+    * @param string, array $errors
+    * @param int $type
+    * @return true
+    */
+    public static function log($errors = '', $message = '', $userId = 0, $type = self::TYPE_UNDEFINED, $extraFields = [])
     {
+        $this->load($extraFields);
         if (is_string($errors)) {
             $temp = $errors;
             unset($errors);
