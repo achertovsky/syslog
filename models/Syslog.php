@@ -219,6 +219,7 @@ class Syslog extends \yii\db\ActiveRecord
     */
     public static function log($errors = '', $message = '', $userId = 0, $type = self::TYPE_UNDEFINED, $extraFields = [])
     {
+        $this->load($extraFields);
         if (is_string($errors)) {
             $temp = $errors;
             unset($errors);
