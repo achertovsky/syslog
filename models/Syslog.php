@@ -238,7 +238,7 @@ class Syslog extends \yii\db\ActiveRecord
             $errors = Json::encode($errors);
         }
         $log = new self();
-        $log->load($extraFields);
+        $log->load($extraFields, '');
         $log->setAttributes([
             'log_source' => $type,
             'issues' => $errors,
