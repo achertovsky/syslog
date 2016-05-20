@@ -39,7 +39,7 @@ class Syslog extends \yii\db\ActiveRecord
         return [
             [['log_source'], 'required'],
             [['issues', 'message'], 'string', 'min' => 0],
-            [['log_source', 'created_at', 'updated_at', 'user_id', 'scanned_item'], 'integer', 'min' => 0],
+            [['log_source', 'created_at', 'updated_at', 'user_id'], 'integer', 'min' => 0],
             ['sended', 'boolean'],
         ];
     }
@@ -89,12 +89,6 @@ class Syslog extends \yii\db\ActiveRecord
      */
     const MAIL_SENDED = 1;
     const MAIL_NOT_SENDED = 0;
-    /**
-     * defines scanned_item
-     * @var int
-     */
-    const ITEM_NOT_SCANNED = 0;
-    const ITEM_SCANNED = 1;
     /**
      * defines log_source
      * @var int
