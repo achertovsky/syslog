@@ -23,6 +23,8 @@ use yii\db\Expression;
  */
 class Syslog extends \yii\db\ActiveRecord
 {
+    public $className = 'achertovsky\syslog\models\Syslog';
+    
     /**
      * @inheritdoc
      */
@@ -211,7 +213,7 @@ class Syslog extends \yii\db\ActiveRecord
     * @param int $type
     * @return true
     */
-    public static function log($errors = '', $message = '', $userId = 0, $type = self::TYPE_UNDEFINED, $extraFields = [])
+    public function log($errors = '', $message = '', $userId = 0, $type = self::TYPE_UNDEFINED, $extraFields = [])
     {
         if (is_string($errors)) {
             $temp = $errors;
@@ -231,19 +233,18 @@ class Syslog extends \yii\db\ActiveRecord
             $errors = self::formatToOneLevelArray($errors);
             $errors = Json::encode($errors);
         }
-        $log = new self();
-        $log->load($extraFields, '');
-        $log->setAttributes([
+        $this->load($extraFields, '');
+        $this->setAttributes([
             'log_source' => $type,
             'issues' => $errors,
             'user_id' => $userId,
             'message' => $message,
         ]);
-        if ($log->save()) {
-            Yii::trace("Logged info:\n".var_export($log->getAttributes(), true), 'syslog');
+        if ($this->save()) {
+            Yii::trace("Logged info:\n".var_export($this->getAttributes(), true), 'syslog');
             return true;
         } else {
-            Yii::error("Logs save errors occured. Listing:\n".var_export($log->errors, true).var_export($log->getAttributes(), true), 'syslog');
+            Yii::error("Logs save errors occured. Listing:\n".var_export($this->errors, true).var_export($this->getAttributes(), true), 'syslog');
             return false;
         }
     }
