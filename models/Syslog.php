@@ -193,15 +193,15 @@ class Syslog extends \yii\db\ActiveRecord
     protected static function formatToOneLevelArray($array)
     {
         $resultArray = [];
-        foreach ($array as $elem) {
+        foreach ($array as $key => $elem) {
             if (is_array($elem)) {
                 $subArray = self::formatToOneLevelArray($elem);
-                foreach ($subArray as $subElem) {
-                    $resultArray[] = $subElem;
+                foreach ($subArray as $subKey => $subElem) {
+                    $resultArray[] = $subKey.' => '.$subElem;
                 }
                 continue;
             }
-            $resultArray[] = $elem;
+            $resultArray[] = $key.' => '.$elem;
         }
         return $resultArray;
     }
