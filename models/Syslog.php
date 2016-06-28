@@ -192,9 +192,6 @@ class Syslog extends \yii\db\ActiveRecord
      */
     protected static function formatToOneLevelArray($array)
     {
-        if (empty($array)) {
-            return $array[] = "";
-        }
         $resultArray = [];
         foreach ($array as $key => $elem) {
             if (is_object($elem)) {
@@ -242,9 +239,9 @@ class Syslog extends \yii\db\ActiveRecord
         $this->load($extraFields, '');
         $this->setAttributes([
             'log_source' => $type,
-            'issues' => $errors,
+            'issues' => $errors == '[]' ? '[""]' : $errors,
             'user_id' => $userId,
-            'message' => $message,
+            'message' => $message == '[]' ? '[""]' : $message,
         ]);
         if ($this->save()) {
             Yii::trace("Logged info:\n".var_export($this->getAttributes(), true), 'syslog');
