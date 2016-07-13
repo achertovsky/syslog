@@ -218,6 +218,12 @@ class Syslog extends \yii\db\ActiveRecord
     */
     public function log($errors = '', $message = '', $userId = 0, $type = self::TYPE_UNDEFINED, $extraFields = [])
     {
+        if (is_null($errors)) {
+            $errors = '';
+        }
+        if (is_null($message)) {
+            $message = '';
+        }
         if (is_string($errors)) {
             $temp = $errors;
             unset($errors);
