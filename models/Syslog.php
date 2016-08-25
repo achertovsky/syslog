@@ -257,6 +257,9 @@ class Syslog extends \yii\db\ActiveRecord
             'user_id' => $userId,
             'message' => $message == '[]' ? '[""]' : $message,
         ]);
+        if ($this->issues == '[""]' && $this->message == '[""]') {
+            return true;
+        }
         if ($this->save()) {
             Yii::trace("Logged info:\n".var_export($this->getAttributes(), true), 'syslog');
             return true;
