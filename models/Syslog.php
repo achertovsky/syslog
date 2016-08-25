@@ -240,6 +240,14 @@ class Syslog extends \yii\db\ActiveRecord
         }
         if (is_array($errors)) {
             $errors = self::formatToOneLevelArray($errors);
+            //ignore errors
+            foreach ($errors as $key => $error) {
+                foreach ($this->module->errorIgnoreList as $ignore) {
+                    if (strpos($error, $ignore) !== false) {
+                        unset($errors[$key]);
+                    }
+                }
+            }
             $errors = Json::encode($errors);
         }
         $this->load($extraFields, '');
