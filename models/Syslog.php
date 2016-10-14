@@ -218,54 +218,58 @@ class Syslog extends \yii\db\ActiveRecord
     */
     public function log($errors = '', $message = '', $userId = 0, $type = self::TYPE_UNDEFINED, $extraFields = [])
     {
-        if (is_null($errors)) {
-            $errors = '';
-        }
-        if (is_null($message)) {
-            $message = '';
-        }
-        if (is_string($errors)) {
-            $temp = $errors;
-            unset($errors);
-            $errors[] = $temp;
-        }
-        if (is_string($message)) {
-            $temp = $message;
-            unset($message);
-            $message[] = $temp;
-        }
-        if (is_array($message)) {
-            $message = self::formatToOneLevelArray($message);
-            $message = Json::encode($message);
-        }
-        if (is_array($errors)) {
-            $errors = self::formatToOneLevelArray($errors);
-            //ignore errors
-            foreach ($errors as $key => $error) {
-                foreach ($this->module->errorIgnoreList as $ignore) {
-                    if (strpos($error, $ignore) !== false) {
-                        unset($errors[$key]);
+        try {
+            if (is_null($errors)) {
+                $errors = '';
+            }
+            if (is_null($message)) {
+                $message = '';
+            }
+            if (is_string($errors)) {
+                $temp = $errors;
+                unset($errors);
+                $errors[] = $temp;
+            }
+            if (is_string($message)) {
+                $temp = $message;
+                unset($message);
+                $message[] = $temp;
+            }
+            if (is_array($message)) {
+                $message = self::formatToOneLevelArray($message);
+                $message = Json::encode($message);
+            }
+            if (is_array($errors)) {
+                $errors = self::formatToOneLevelArray($errors);
+                //ignore errors
+                foreach ($errors as $key => $error) {
+                    foreach ($this->module->errorIgnoreList as $ignore) {
+                        if (strpos($error, $ignore) !== false) {
+                            unset($errors[$key]);
+                        }
                     }
                 }
+                $errors = Json::encode($errors);
             }
-            $errors = Json::encode($errors);
-        }
-        $this->load($extraFields, '');
-        $this->setAttributes([
-            'log_source' => $type,
-            'issues' => $errors == '[]' ? '[""]' : $errors,
-            'user_id' => $userId,
-            'message' => $message == '[]' ? '[""]' : $message,
-        ]);
-        if ($this->issues == '[""]' && $this->message == '[""]') {
-            return true;
-        }
-        if ($this->save()) {
-            Yii::trace("Logged info:\n".var_export($this->getAttributes(), true), 'syslog');
-            return true;
-        } else {
-            Yii::error("Logs save errors occured. Listing:\n".var_export($this->errors, true).var_export($this->getAttributes(), true), 'syslog');
-            return false;
+            $this->load($extraFields, '');
+            $this->setAttributes([
+                'log_source' => $type,
+                'issues' => $errors == '[]' ? '[""]' : $errors,
+                'user_id' => $userId,
+                'message' => $message == '[]' ? '[""]' : $message,
+            ]);
+            if ($this->issues == '[""]' && $this->message == '[""]') {
+                return true;
+            }
+            if ($this->save()) {
+                Yii::trace("Logged info:\n".var_export($this->getAttributes(), true), 'syslog');
+                return true;
+            } else {
+                Yii::error("Logs save errors occured. Listing:\n".var_export($this->errors, true).var_export($this->getAttributes(), true), 'syslog');
+                return false;
+            }
+        } catch (\Exception $ex) {
+            Yii::error('Syslog critical error: '.$ex->getMessage());
         }
     }
 }
