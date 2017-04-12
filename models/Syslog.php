@@ -192,21 +192,25 @@ class Syslog extends \yii\db\ActiveRecord
      */
     protected static function formatToOneLevelArray($array)
     {
-        $resultArray = [];
-        foreach ($array as $key => $elem) {
-            if (is_object($elem)) {
-                $elem = (array)$elem;
-            }
-            if (is_array($elem)) {
-                $subArray = self::formatToOneLevelArray($elem);
-                foreach ($subArray as $subKey => $subElem) {
-                    $resultArray[] = !empty($subElem) && !is_int($subKey) ? $subKey.' => '.$subElem : $subElem;
+        try {
+            $resultArray = [];
+            foreach ($array as $key => $elem) {
+                if (is_object($elem)) {
+                    $elem = (array)$elem;
                 }
-                continue;
+                if (is_array($elem)) {
+                    $subArray = self::formatToOneLevelArray($elem);
+                    foreach ($subArray as $subKey => $subElem) {
+                        $resultArray[] = !empty($subElem) && !is_int($subKey) ? $subKey.' => '.$subElem : $subElem;
+                    }
+                    continue;
+                }
+                $resultArray[] = !empty($elem) && !is_int($key) ? $key.' => '.$elem : $elem;
             }
-            $resultArray[] = !empty($elem) && !is_int($key) ? $key.' => '.$elem : $elem;
+            return $resultArray;
+        } catch (\Exception $ex) {
+            Yii::error($ex->getMessage().' '.$ex->getTraceAsString().' '.var_export($array, true));
         }
-        return $resultArray;
     }
     
     /**
