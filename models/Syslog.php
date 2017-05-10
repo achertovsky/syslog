@@ -223,6 +223,9 @@ class Syslog extends \yii\db\ActiveRecord
     public function log($errors = '', $message = '', $userId = 0, $type = self::TYPE_UNDEFINED, $extraFields = [])
     {
         try {
+            if ($type == self::TYPE_UNDEFINED) {
+                $type = php_sapi_name() == 'cli' ? self::TYPE_CRON : self::TYPE_FRONTEND;
+            }
             if (is_null($errors)) {
                 $errors = '';
             }
