@@ -200,11 +200,11 @@ class Syslog extends \yii\db\ActiveRecord
             if (is_array($elem)) {
                 $subArray = self::formatToOneLevelArray($elem);
                 foreach ($subArray as $subKey => $subElem) {
-                    $resultArray[] = !empty($subElem) && !is_int($subKey) ? $subKey.' => '.$subElem : $subElem;
+                    $resultArray[] =  $subKey.' => '.$subElem;
                 }
                 continue;
             }
-            $resultArray[] = !empty($elem) && !is_int($key) ? $key.' => '.$elem : $elem;
+            $resultArray[] =  $key.' => '.$elem;
         }
         return $resultArray;
     }
