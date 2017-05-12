@@ -219,7 +219,7 @@ class Syslog extends \yii\db\ActiveRecord
      * @param string $elem
      * @return string
      */
-    private function resultArrayFilter($key, $elem, $totalCount)
+    private static function resultArrayFilter($key, $elem, $totalCount)
     {
         if ($elem === 0) {
             $elem = '0';
