@@ -232,7 +232,10 @@ class Syslog extends \yii\db\ActiveRecord
         }
         if ($totalCount == 1 && empty($key) && !empty($elem)) {
             return $elem;
+        } elseif ($totalCount > 1) {
+            return "$key => $elem";
         }
+        
         return '';
     }
     
