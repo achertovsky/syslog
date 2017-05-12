@@ -6,6 +6,12 @@ use Yii;
 
 class Module extends \yii\base\Module
 {
+     /**
+     * errors that contains text from one of ingores will be ignored.
+     * its checking by strpos
+     * @var array of strings 
+     */
+    public $errorIgnoreList = [];
     /**
      * defines mailer class for this module.
      * @var string
