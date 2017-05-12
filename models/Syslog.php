@@ -201,22 +201,39 @@ class Syslog extends \yii\db\ActiveRecord
                 if (is_array($elem)) {
                     $subArray = self::formatToOneLevelArray($elem);
                     foreach ($subArray as $subKey => $subElem) {
-                        if ($subElem === false) {
-                            $subElem = 'false';
-                        }
-                        $resultArray[] = $subKey.' => '.$subElem;
+                        $resultArray[] = Syslog::resultArrayFilter($subKey, $subElem, count($subArray));
                     }
                     continue;
                 }
-                if ($elem === false) {
-                    $elem = 'false';
-                }
-                $resultArray[] = $key.' => '.$elem;
+                $resultArray[] = Syslog::resultArrayFilter($key, $elem, count($array));
             }
             return $resultArray;
         } catch (\Exception $ex) {
             Yii::error($ex->getMessage().' '.$ex->getTraceAsString().' '.var_export($array, true));
         }
+    }
+    
+    /**
+     * Function that makes result of formatOneLevelArray more friendly
+     * @param string $key
+     * @param string $elem
+     * @return string
+     */
+    private function resultArrayFilter($key, $elem, $totalCount)
+    {
+        if ($elem === 0) {
+            $elem = '0';
+        }
+        if ($elem === false) {
+            $elem = 'false';
+        }
+        if (is_null($elem)) {
+            $elem = 'null';
+        }
+        if ($totalCount == 1 && empty($key) && !empty($elem)) {
+            return $elem;
+        }
+        return '';
     }
     
     /**
