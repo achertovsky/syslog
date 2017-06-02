@@ -305,6 +305,32 @@ class Syslog extends \yii\db\ActiveRecord
             Yii::error('Syslog critical error: '.$ex->getMessage());
         }
     }
+    
+    /**
+     * TODO PHPDOC
+     */
+    public function trackPoint($comment = '')
+    {
+        try {
+            $debug = debug_backtrace();
+            $fileLine = [];
+            foreach ($debug as $trace) {
+                if (empty($trace['file'])) {
+                    continue;
+                }
+                $fileLine[] = "{$trace['file']}({$trace['line']})";
+            }
+            $this->log(
+                '',
+                ArrayHelper::merge(
+                    [$comment],
+                    $fileLine
+                )
+            );
+        } catch (\Exception $ex) {
+            $this->log($ex->getMessage().' '.$ex->getTraceAsString());
+        }
+    }
 }
 
 
