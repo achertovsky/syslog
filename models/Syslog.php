@@ -246,8 +246,28 @@ class Syslog extends \yii\db\ActiveRecord
     * @param int $type
     * @return true
     */
-    public function log($errors = '', $message = '', $userId = 0, $type = self::TYPE_UNDEFINED, $extraFields = [])
+    public function log($errors = '', $message = '', $userId = 0, $type = self::TYPE_UNDEFINED)
     {
+        if (empty($GLOBALS['syslogEndingFunc'])) {
+            register_shutdown_function(function () {
+                $logs = $GLOBALS['syslogLogs'];
+                if (!empty($logs)) {
+                    Yii::$app->logDb->createCommand()->batchInsert(
+                        $this->tableName(),
+                        [
+                            'log_source',
+                            'issues',
+                            'user_id',
+                            'message',
+                            'created_at',
+                            'updated_at',
+                        ],
+                        $logs
+                    )->execute();
+                }
+            });
+            $GLOBALS['syslogEndingFunc'] = true;
+        }
         try {
             if ($type == self::TYPE_UNDEFINED) {
                 $type = php_sapi_name() == 'cli' ? self::TYPE_CRON : self::TYPE_FRONTEND;
@@ -284,7 +304,6 @@ class Syslog extends \yii\db\ActiveRecord
                 }
                 $errors = Json::encode($errors);
             }
-            $this->load($extraFields, '');
             $this->setAttributes([
                 'log_source' => $type,
                 'issues' => $errors == '[]' ? '[""]' : $errors,
@@ -294,8 +313,15 @@ class Syslog extends \yii\db\ActiveRecord
             if ($this->issues == '[""]' && $this->message == '[""]') {
                 return true;
             }
-            if ($this->save()) {
-                Yii::trace("Logged info:\n".var_export($this->getAttributes(), true), 'syslog');
+            if ($this->validate()) {
+                $GLOBALS['syslogLogs'][] = [
+                    $this->log_source,
+                    $this->issues,
+                    $this->user_id,
+                    $this->message,
+                    time(),
+                    time(),
+                ];
                 return true;
             } else {
                 Yii::error("Logs save errors occured. Listing:\n".var_export($this->errors, true).var_export($this->getAttributes(), true), 'syslog');
