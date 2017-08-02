@@ -335,7 +335,7 @@ class Syslog extends \yii\db\ActiveRecord
     /**
      * TODO PHPDOC
      */
-    public function trackPoint($comment = '')
+    public function trackPoint($comment = '', $markAsError = false)
     {
         try {
             $debug = debug_backtrace();
@@ -346,13 +346,21 @@ class Syslog extends \yii\db\ActiveRecord
                 }
                 $fileLine[] = "{$trace['file']}({$trace['line']})";
             }
-            $this->log(
-                '',
-                ArrayHelper::merge(
-                    [$comment],
+            if ($markAsError) {
+                $this->log(
+                    $comment,
                     $fileLine
-                )
-            );
+                );
+                Yii::error("Check $comment error log in syslog");
+            } else {
+                $this->log(
+                    '',
+                    ArrayHelper::merge(
+                        [$comment],
+                        $fileLine
+                    )
+                );
+            }
         } catch (\Exception $ex) {
             $this->log($ex->getMessage().' '.$ex->getTraceAsString());
         }
