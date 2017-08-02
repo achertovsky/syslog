@@ -333,7 +333,10 @@ class Syslog extends \yii\db\ActiveRecord
     }
     
     /**
-     * TODO PHPDOC
+     * Generates log with filestack to current place
+     * @param string $comment
+     * @param boolean $markAsError
+     * if $markAsError is true - generates ERROR log and generates Yii::error log
      */
     public function trackPoint($comment = '', $markAsError = false)
     {
