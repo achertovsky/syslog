@@ -32,7 +32,7 @@ class Syslog extends \yii\db\ActiveRecord
     {
         return 'syslog';
     }
-
+    
     /**
      * @inheritdoc
      */
@@ -250,9 +250,12 @@ class Syslog extends \yii\db\ActiveRecord
     {
         if (empty($GLOBALS['syslogEndingFunc'])) {
             register_shutdown_function(function () {
+                if (!isset($GLOBALS['syslogLogs'])) {
+                    $GLOBALS['syslogLogs'] = [];
+                }
                 $logs = $GLOBALS['syslogLogs'];
                 if (!empty($logs)) {
-                    Yii::$app->logDb->createCommand()->batchInsert(
+                    $this->getDb()->createCommand()->batchInsert(
                         $this->tableName(),
                         [
                             'log_source',
@@ -354,7 +357,7 @@ class Syslog extends \yii\db\ActiveRecord
                     $comment,
                     $fileLine
                 );
-                Yii::error("Check $comment error log in syslog");
+                Yii::error("Check '$comment' error log in syslog");
             } else {
                 $this->log(
                     '',
